@@ -28,12 +28,18 @@ Feel free to use this code/application, just please credit me (AwesomeMc101)! :)
 
 #include <math.h>
 
+/*.03*/
+#include <chrono>
+#include <time.h>
+
 #include "consoleColors.h"
 
 typedef unsigned int CORRECT_COUNT;
 
 /*global vars*/
 BOOL isLoaded = FALSE;
+
+int scramble_seed = 0;
 
 int main();
 
@@ -56,6 +62,55 @@ err newErr()
     newError.errorCode = 0;
 
     return newError;
+}
+
+class scrambleVector
+{
+public:
+    std::vector<std::string> vec1; //question
+    std::vector<std::string> vec2; //answer
+    bool errorTrue = false;
+};
+
+scrambleVector scrambleVectorNoSeed(std::vector<std::string> vec1, std::vector<std::string> vec2)
+{
+
+    scrambleVector finalResult;
+    for (int i = 0; i < vec1.size(); i++)
+    {
+        finalResult.vec1.push_back("");
+        finalResult.vec2.push_back("");
+    }
+
+    if (finalResult.vec1.size() != vec1.size())
+    {
+        std::cout << "Scramble Error [vector size mismatch]";
+        std::cout << "\nfinalResultV1.size(): " << finalResult.vec1.size();
+        std::cout << "\noriginalV1.size(): " << vec1.size();
+        finalResult.errorTrue = true;
+        return finalResult;
+    }
+
+    std::vector<int> magicNumberList;
+
+    for (int i = 0; i < vec1.size(); i++)
+    {
+        entry:
+        int magicNumber = rand() % vec1.size();
+        for (int z = 0; z < magicNumberList.size(); z++)
+        {
+            if (magicNumberList[z] == magicNumber)
+            {
+                goto entry;
+            }
+        }
+
+        finalResult.vec1[i] = vec1[magicNumber];
+        finalResult.vec2[i] = vec2[magicNumber];
+    }
+
+    return finalResult;
+
 }
 
 namespace Import
@@ -186,11 +241,15 @@ namespace Advanced
                 CORRECT_COUNT correctChars = 0;
                 for (int i = 0; i < correctAnswer.length(); i++)
                 {
+                    std::cout << "[OFFBY DEBUG A] Compare: " << std::tolower(input[i]) << " | " << std::tolower(correctAnswer[i]) << std::endl;
+
                     if (std::tolower(input[i]) == std::tolower(correctAnswer[i]))
                     {
+                        std::cout << "ATRUE\n";
                         ++correctChars;
                         continue;
                     }
+                    std::cout << "AFALSE\n";
                     wrongPositions.push_back(correctAnswer[i]);
 
                 }
@@ -201,11 +260,14 @@ namespace Advanced
                 CORRECT_COUNT correctChars = 0;
                 for (int i = 0; i < correctAnswer.length(); i++)
                 {
+                    std::cout << "[OFFBY DEBUG B] Compare: " << std::tolower(input[i]) << " | " << std::tolower(correctAnswer[i]) << std::endl;
                     if (std::tolower(input[i]) == std::tolower(correctAnswer[i]))
                     {
+                        std::cout << "BTRUE\n";
                         ++correctChars;
                         continue;
                     }
+                    std::cout << "BFALSE\n";
                     wrongPositions.push_back(correctAnswer[i]);
 
                 }
@@ -216,11 +278,15 @@ namespace Advanced
                 CORRECT_COUNT correctChars = 0;
                 for (int i = 0; i < input.length(); i++)
                 {
+                    std::cout << "[OFFBY DEBUG C] Compare: " << std::tolower(input[i]) << " | " << std::tolower(correctAnswer[i]) << std::endl;
+
                     if (std::tolower(input[i]) == std::tolower(correctAnswer[i]))
                     {
+                        std::cout << "CTRUE\n";
                         ++correctChars;
                         continue;
                     }
+                    std::cout << "CFALSE\n";
                     wrongPositions.push_back(correctAnswer[i]);
 
                 }
@@ -233,14 +299,33 @@ namespace Advanced
         }
     }
 
-    err runAdvanced(std::vector<std::string> questions, std::vector<std::string> answers)
+    err runAdvanced(std::vector<std::string> _questions, std::vector<std::string> _answers)
     {
         err errorData = newErr();
 
+        scrambleVector scrambledData = scrambleVectorNoSeed(_questions, _answers);
+
+        std::vector<std::string> questions, answers;
+
+        if (scrambledData.errorTrue)
+        {
+            
+            questions = _questions;
+            answers = _answers;
+        }
+        else
+        {
+            questions = scrambledData.vec1;
+            answers = scrambledData.vec2;
+        }
+
         std::cout << "\n";
         system("cls");
-        std::cout << blue << "Advanced Learn v.02" << white << std::endl << std::endl;
-
+        std::cout << blue << "Advanced Learn v.03" << white << std::endl << std::endl;
+        if (scrambledData.errorTrue)
+        {
+            std::cout << "Unscrambled";
+        }
         CORRECT_COUNT correctAnswers = 0;
         for (int i = 0; i < questions.size(); i++)
         {
@@ -274,10 +359,12 @@ namespace Advanced
 
             CORRECT_COUNT correctCharacters = offBySome::isOffBy(userAnswer, answers[i]); //correct chars
 
-            int offbypercent = .50; //this should eventually be found in a settings file
+            double offbypercent = .50; //this should eventually be found in a settings file
 
             // (answers[i].length()-correctCharacters)  / answers[i].length(); //this returns the % of missed chars
-            if (((double)correctCharacters / (double)answers[i].length()) > offbypercent)
+            //if (((double)correctCharacters / (double)answers[i].length()) > offbypercent)
+            std::cout << "Correct %: " << (double)correctCharacters / 100.0;
+            if (((double)correctCharacters / 10.0) > offbypercent)
             {
                 std::cout << green << "Correct, but you were a little off. " << white << "The full answer is  " << answers[i] << "\nNext question." << std::endl;
                 ++correctAnswers;
@@ -333,13 +420,81 @@ namespace Basic
     }
 }
 
+namespace Games
+{
+    namespace Speed
+    {
+        void countdown()
+        {
+            std::cout << "3.. ";
+            Sleep(1000);
+            std::cout << "2.. ";
+            Sleep(1000);
+            std::cout << "1.. ";
+            Sleep(1000);
+        }
+        err runSpeed(std::vector<std::string> questions, std::vector<std::string> answers)
+        {
+            err errorData = newErr();
+            std::cout << "\n";
+            system("cls");
+
+            std::cout << blue << "Welcome to SpeedTest. When you see the definition, type the answer!" << white << std::endl;
+            countdown(); //lol
+            std::cout << "Go!\n";
+
+            std::chrono::time_point<std::chrono::system_clock> start;
+            std::chrono::time_point<std::chrono::system_clock> end;
+
+            start = std::chrono::system_clock::now(); //get time rn
+            int correctAnswers = 0;
+            for (int i = 0; i < questions.size(); i++)
+            {
+                std::string ans="";
+                std::cout << questions[i] << std::endl;
+                if (ans == answers[i])
+                {
+                        std::cout << green << "Correct! " << white << "Next question." << std::endl;
+                        ++correctAnswers;
+                        continue;
+                }
+
+
+                if (Advanced::specialChar::checkSpecialChar(ans, answers[i]))
+                {
+                  
+                    ++correctAnswers;
+                    continue;
+                }
+
+                CORRECT_COUNT correctCharacters = Advanced::offBySome::isOffBy(ans, answers[i]); //correct chars
+
+                double offbypercent = .50; //this should eventually be found in a settings file
+
+                if (((double)correctCharacters / 10.0) > offbypercent)
+                {
+                   
+                    ++correctAnswers;
+                    continue;
+                }
+
+            }
+            end = std::chrono::system_clock::now();
+
+            std::chrono::duration<double> userTime = end - start;
+            std::cout << "Your time was: " << userTime << " seconds. Not bad!\n";
+            return errorData;
+        }
+    }
+}
+
 namespace Essential
 {
     int askType()
     {
        
        
-       // return 0xF7489; //basic
+       // return 0xF7489; //basic (dont use this unless you want your answers to be 100% identical.)
         return 0x657E48; //advanced
     }
 
@@ -363,11 +518,22 @@ namespace Essential
     }
 }
 
+void setseed(int vectorSize)
+{
+    int random = rand() % 100;
+    scramble_seed = random * vectorSize;
+}
+
 int main()
 {
-    std::cout << "studySkills v.02 | By AwesomeMc101\nIf you want to load a pre-made studyset, type in 'preload'\nIf not, type in the name of the file which should be inside the 'studysets' folder! (example: type 'example.txt')\n";
+    srand(time(NULL));
+   // scramble_seed = rand() % 6754839 + 1000000;
+
+    std::cout << yellow << "WARNING | SCRAMBLING IS UNFINISHED. PLEASE DISABLE IT TO ALLOW FULL FUNCTIONALITY." << white << std::endl;
+    std::cout << "studySkills v.03 | By AwesomeMc101\nIf you want to load a pre-made studyset, type in 'preload'\nIf not, type in the name of the file which should be inside the 'studysets' folder! (example: type 'example.txt')\n";
     std::string fileName = "";
     std::getline(std::cin, fileName);
+
     if (fileName.empty())
     {
         system("cls");
@@ -381,6 +547,7 @@ int main()
     {
         if (!Import::load(fileName).error)
         {
+            setseed(Import::question.size());
             if (!Essential::run(Import::question, Import::answer).error)
             {
                 main();
@@ -397,6 +564,7 @@ int main()
         if (!Import::preloader().error)
         {
             //this should be done by v.03
+            //hi from v.04, might discontinue this and just have sets in there that user can load in like normal. we'll see!
         }
     }
     
