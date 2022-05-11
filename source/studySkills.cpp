@@ -1,16 +1,17 @@
 /*
-- studySkills v0.1
-- Written by AwesomeMc101 for Lunar Guard LLC
-- 5/5/2022
+- studySkills v0.4
+- Written by AwesomeMc101 for Lunar Guard Technologies
+- Intial Release Date (v.01): 5/5/2022
+- Latest Release Date (v.04): 5/10/2022
 
 -- TODO --
-- More types of learning/studying
-- Interactive games
+- More types of learning/studying - Speed,
+- Interactive games - Speed, 
 - Quizlet/Quiziz/Kahoot/Gimkit Set Loader
 - More user-friendly user-interface
 - More secure loading && placing the files in the 'studyset' folder
 - Finish preload sets
-- Print each question/answer
+- Print each question/answer (DONE, "showall")
 
 Feel free to use this code/application, just please credit me (AwesomeMc101)! :)
 */
@@ -35,11 +36,12 @@ Feel free to use this code/application, just please credit me (AwesomeMc101)! :)
 #include "consoleColors.h"
 
 typedef unsigned int CORRECT_COUNT;
+typedef unsigned long long int SEED_T;
 
 /*global vars*/
 BOOL isLoaded = FALSE;
 
-int scramble_seed = 0;
+SEED_T scramble_seed = 0;
 
 int main();
 
@@ -64,7 +66,7 @@ err newErr()
     return newError;
 }
 
-class scrambleVector
+class scrambleVectorC
 {
 public:
     std::vector<std::string> vec1; //question
@@ -72,10 +74,11 @@ public:
     bool errorTrue = false;
 };
 
-scrambleVector scrambleVectorNoSeed(std::vector<std::string> vec1, std::vector<std::string> vec2)
+[[deprecated("switched to seeding vectors for fun")]]
+scrambleVectorC scrambleVectorNoSeed(std::vector<std::string> vec1, std::vector<std::string> vec2)
 {
 
-    scrambleVector finalResult;
+    scrambleVectorC finalResult;
     for (int i = 0; i < vec1.size(); i++)
     {
         finalResult.vec1.push_back("");
@@ -111,6 +114,59 @@ scrambleVector scrambleVectorNoSeed(std::vector<std::string> vec1, std::vector<s
 
     return finalResult;
 
+}
+
+//believe it or not, this is actually seed-based.
+scrambleVectorC scrambleVector(std::vector<std::string> vec1, std::vector<std::string> vec2)
+{
+    /*if you want to use a seed arg in the function call use this code here:
+    
+    srand(SEED_VAR_NAME);
+    
+    */
+    scrambleVectorC sVC;
+    std::vector<std::string> newVectorA;
+    std::vector<std::string> newVectorB;
+    for (int i = 0; i < vec1.size(); i++)
+    {
+        newVectorA.push_back(vec1[i]);
+        newVectorB.push_back(vec2[i]);
+    }
+    if (newVectorA.size() != vec1.size())
+    {
+        std::cout << "Scramble Error [vector size mismatch]";
+        std::cout << "\nnewVector.size(): " << newVectorA.size();
+        std::cout << "\nvec1.size(): " << vec1.size();
+        
+        sVC.errorTrue = TRUE;
+
+        return sVC;
+    }
+
+   
+    std::vector<int> magicNumberList;
+    for (int i = 0; i < vec1.size(); i++)
+    {
+        entry:
+        int magicNumber = rand() % vec1.size();
+        for (int z = 0; z < magicNumberList.size(); z++)
+        {
+            if (magicNumberList[z] == magicNumber)
+            {
+                goto entry;
+            }
+
+        }
+
+        newVectorA[i] = vec1[magicNumber];
+        newVectorB[i] = vec2[magicNumber];
+        magicNumberList.push_back(magicNumber);
+    }      
+    
+    sVC.vec1 = newVectorA;
+    sVC.vec2 = newVectorB;
+
+    return sVC;
 }
 
 namespace Import
@@ -241,15 +297,15 @@ namespace Advanced
                 CORRECT_COUNT correctChars = 0;
                 for (int i = 0; i < correctAnswer.length(); i++)
                 {
-                    std::cout << "[OFFBY DEBUG A] Compare: " << std::tolower(input[i]) << " | " << std::tolower(correctAnswer[i]) << std::endl;
+                   // std::cout << "[OFFBY DEBUG A] Compare: " << std::tolower(input[i]) << " | " << std::tolower(correctAnswer[i]) << std::endl;
 
                     if (std::tolower(input[i]) == std::tolower(correctAnswer[i]))
                     {
-                        std::cout << "ATRUE\n";
+                      //  std::cout << "ATRUE\n";
                         ++correctChars;
                         continue;
                     }
-                    std::cout << "AFALSE\n";
+                   // std::cout << "AFALSE\n";
                     wrongPositions.push_back(correctAnswer[i]);
 
                 }
@@ -260,14 +316,14 @@ namespace Advanced
                 CORRECT_COUNT correctChars = 0;
                 for (int i = 0; i < correctAnswer.length(); i++)
                 {
-                    std::cout << "[OFFBY DEBUG B] Compare: " << std::tolower(input[i]) << " | " << std::tolower(correctAnswer[i]) << std::endl;
+                   // std::cout << "[OFFBY DEBUG B] Compare: " << std::tolower(input[i]) << " | " << std::tolower(correctAnswer[i]) << std::endl;
                     if (std::tolower(input[i]) == std::tolower(correctAnswer[i]))
                     {
-                        std::cout << "BTRUE\n";
+                     //   std::cout << "BTRUE\n";
                         ++correctChars;
                         continue;
                     }
-                    std::cout << "BFALSE\n";
+                  //  std::cout << "BFALSE\n";
                     wrongPositions.push_back(correctAnswer[i]);
 
                 }
@@ -278,15 +334,15 @@ namespace Advanced
                 CORRECT_COUNT correctChars = 0;
                 for (int i = 0; i < input.length(); i++)
                 {
-                    std::cout << "[OFFBY DEBUG C] Compare: " << std::tolower(input[i]) << " | " << std::tolower(correctAnswer[i]) << std::endl;
+               //     std::cout << "[OFFBY DEBUG C] Compare: " << std::tolower(input[i]) << " | " << std::tolower(correctAnswer[i]) << std::endl;
 
                     if (std::tolower(input[i]) == std::tolower(correctAnswer[i]))
                     {
-                        std::cout << "CTRUE\n";
+                 //       std::cout << "CTRUE\n";
                         ++correctChars;
                         continue;
                     }
-                    std::cout << "CFALSE\n";
+                 //   std::cout << "CFALSE\n";
                     wrongPositions.push_back(correctAnswer[i]);
 
                 }
@@ -303,9 +359,12 @@ namespace Advanced
     {
         err errorData = newErr();
 
-        scrambleVector scrambledData = scrambleVectorNoSeed(_questions, _answers);
+        scrambleVectorC scrambledData = scrambleVector(_questions, _answers);
 
         std::vector<std::string> questions, answers;
+
+        //questions = scrambleVector(_questions);
+       // answers = scrambleVector(_answers);
 
         if (scrambledData.errorTrue)
         {
@@ -321,11 +380,8 @@ namespace Advanced
 
         std::cout << "\n";
         system("cls");
-        std::cout << blue << "Advanced Learn v.03" << white << std::endl << std::endl;
-        if (scrambledData.errorTrue)
-        {
-            std::cout << "Unscrambled";
-        }
+        std::cout << blue << "Advanced Learn v.04" << white << std::endl << std::endl;
+      
         CORRECT_COUNT correctAnswers = 0;
         for (int i = 0; i < questions.size(); i++)
         {
@@ -452,9 +508,10 @@ namespace Games
             {
                 std::string ans="";
                 std::cout << questions[i] << std::endl;
+                std::getline(std::cin, ans); //can't believe i forgot this in v.03 when i wrote this func
                 if (ans == answers[i])
                 {
-                        std::cout << green << "Correct! " << white << "Next question." << std::endl;
+                        //std::cout << green << "Correct! " << white << "Next question." << std::endl;
                         ++correctAnswers;
                         continue;
                 }
@@ -482,7 +539,11 @@ namespace Games
             end = std::chrono::system_clock::now();
 
             std::chrono::duration<double> userTime = end - start;
-            std::cout << "Your time was: " << userTime << " seconds. Not bad!\n";
+            std::cout << "Your time was: " << userTime << " seconds. Not bad!\n";\
+            float score = 100 * (correctAnswers / questions.size());
+
+            std::cout << "Your total score was: " << correctAnswers << "/" << questions.size();
+
             return errorData;
         }
     }
@@ -492,10 +553,27 @@ namespace Essential
 {
     int askType()
     {
+        std::cout << "Which type of game/learn would you like to play?\nOptions: learn, speedtest, showall\n";
+        std::string type; std::getline(std::cin, type);
+        if (type.find("learn") != std::string::npos)
+        {
+            return 0x657E48;
+        }
+        if (type.find("speedtest") != std::string::npos)
+        {
+            return 0x855335;
+        }
+        if (type.find("showall") != std::string::npos)
+        {
+            return 0x578930F;
+        }
+       //FINALLY ADDED THIS
        
-       
+
+
        // return 0xF7489; //basic (dont use this unless you want your answers to be 100% identical.)
         return 0x657E48; //advanced
+        //return 0x855335; // speed game
     }
 
 
@@ -513,24 +591,52 @@ namespace Essential
         {
             Basic::runBasic(questions, answers);
         }
+        if (type == 0x855335)
+        {
+            Games::Speed::runSpeed(questions, answers);
+        }
+        if (type == 0x578930F)
+        {
+            //this does not use seeding and IS. IN. ORDER.
+            for (int i = 0; i < questions.size(); i++)
+            {
+                std::cout << i + 1 << ". " << green << questions[i] << " | " << red << answers[i] << white << std::endl;
+            }
+            main();
+        }
 
         return errorData;
     }
 }
 
-void setseed(int vectorSize)
+SEED_T setseed()
 {
-    int random = rand() % 100;
-    scramble_seed = random * vectorSize;
+    int random = rand() % RAND_MAX;
+    return random;
 }
 
 int main()
 {
-    srand(time(NULL));
+    //This fixes the error that basically doubled the questions by
+    //having 2 of every question because we kept loading the file
+    //and didn't clear the old vectors
+    //(This is for people who had the main() function called twice because they did more)
+    
+    Import::question.clear();
+    Import::answer.clear();
+    if (Import::question.size() > 0 || Import::answer.size() > 0)
+    {
+        std::cout << red << "MEMORY_ERROR: VECTOR SIZE MISMATCH" << std::endl;
+        std::string x;
+        std::cin >> x;
+        return 0x00000; //xd
+    }
+
+
    // scramble_seed = rand() % 6754839 + 1000000;
 
-    std::cout << yellow << "WARNING | SCRAMBLING IS UNFINISHED. PLEASE DISABLE IT TO ALLOW FULL FUNCTIONALITY." << white << std::endl;
-    std::cout << "studySkills v.03 | By AwesomeMc101\nIf you want to load a pre-made studyset, type in 'preload'\nIf not, type in the name of the file which should be inside the 'studysets' folder! (example: type 'example.txt')\n";
+    //std::cout << yellow << "WARNING | SCRAMBLING IS UNFINISHED. PLEASE DISABLE IT TO ALLOW FULL FUNCTIONALITY." << white << std::endl;
+    std::cout << "studySkills v.04 | By AwesomeMc101\nIf you want to load a pre-made studyset, type in 'preload'\nIf not, type in the name of the file which should be inside the 'studysets' folder! (example: type 'example.txt')\n";
     std::string fileName = "";
     std::getline(std::cin, fileName);
 
@@ -543,11 +649,43 @@ int main()
         main();
     }
 
+    std::cout << "If you would like to use a preset seed for your game, type it or paste it here. If not, leave it blank/press enter.\n";
+    SEED_T seed;
+    std::string seeds;
+    std::getline(std::cin, seeds);
+    if (seeds.empty())
+    {
+        srand(time(NULL));
+        seed = setseed();
+        srand(seed);
+        std::cout << "If you want it, your seed is: " << red << seed << white << std::endl;
+    }
+    else
+    {
+        try {
+            seed = std::stoull(seeds);
+        }
+        catch (const std::exception& e) { //user probably typed a letter instead of a number
+            std::cout << "(CONVERSION EXCEPTION) Enter only a number next time. We will generate a random seed for you since conversion failed.\n";
+            seed = setseed();
+
+        }
+        
+        srand(seed);
+        std::cout << std::endl;
+    }
+
+
+
+    //if (seed) { scramble_seed = seed; }
+    //else { scramble_seed = 4; }
+    scramble_seed = seed;
+
     if (fileName != "preload") // != for a reason!
     {
         if (!Import::load(fileName).error)
         {
-            setseed(Import::question.size());
+           
             if (!Essential::run(Import::question, Import::answer).error)
             {
                 main();
@@ -564,7 +702,7 @@ int main()
         if (!Import::preloader().error)
         {
             //this should be done by v.03
-            //hi from v.04, might discontinue this and just have sets in there that user can load in like normal. we'll see!
+            // hiii from v.04 release!!! as said earlier, may get rid of this idea
         }
     }
     
